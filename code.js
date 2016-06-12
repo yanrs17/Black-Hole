@@ -1,18 +1,19 @@
 var time = 60 + 1;
 var score = 0;
-var gameSpeed = 33;
+var gameSpeed = 30;
 var numInitBlackHoles = 10;
-var numObjects = 100;
+var numObjects = 10;
 
 
-var blackholeAppearFreq = 1;var shapes = new Array();
+var blackholeAppearFreq = 1;
+var shapes = new Array();
 var Shape = function (x, y, xChange, yChange, obj) {
     this.x = x;
     this.y = y;
     this.xChange = xChange;
     this.yChange = yChange;
+    this.trappedBy = null;
     this.obj = obj;
-    this.trapped = false;
 }
 
 var blackholes = new Array();
@@ -23,6 +24,9 @@ var Blackhole = function (x, y, type) {
     this.type = type;
     this.eaten = 0;
 }
+
+// // Index of blackholes that are full.
+// var full = new Array();
 
 window.onload = function () {
 
@@ -91,7 +95,7 @@ window.onload = function () {
       }
     }
 
-    animate();
+    moveObjects();
     //removeBlackhole();
     countDown();
 }
@@ -128,14 +132,14 @@ function countDown() {
     setTimeout(countDown, 1000);
 }
 
-function animate() {
+function moveObjects() {
     // Always clear the canvas after drawing each frame
     window.ctx.clearRect(0, 40, 1000, 640);
 
     // Draw here, including conditionals
     moveBlackhole();
     moveObject();
-    setTimeout(animate, gameSpeed);
+    setTimeout(moveObjects, 1000 / gameSpeed);
 }
 
 //window.addEventListener('mousedown', getMousePos, false);
@@ -163,6 +167,16 @@ function mouseDown(event) {
         // If it is a blackhole
         if (isOnBlackhole(blackholes[i].x, blackholes[i].y, pos.x, pos.y)) {
             // Remove the blackhole
+            if (blackholes[i].type == "blue") {
+                addScore(5);
+            }
+            else if (blackholes[i].type == "purple") {
+                addScore(10);
+            }
+            else if (blackholes[i].type == "black") {
+                addScore(20);
+            }
+            release(blackholes[i]);
             blackholes.splice(i, 1);
             break;
         }
@@ -172,7 +186,6 @@ function mouseDown(event) {
 function moveBlackhole(){
 
     for (var i = 0; i < blackholes.length; i ++) {
-        //console.log("haha");
         if (blackholes[i].type === 'blue') {
             ctx.drawImage(ctx.imgBlackHole1, blackholes[i].x, blackholes[i].y, 50, 50);
         }
@@ -203,51 +216,138 @@ function isInArea(xBlackhole, yBlackhole, xSelected, ySelected) {
         ySelected < bottomBoundary
 }
 
-function moveObject() {
-
-    var obj, newX, newY, i, j;
-
-    for (i = 0; i < shapes.length; i ++) {
+function trap(i) {
+    for (j = 0; j < blackholes.length; j ++) {
         if (shapes[i] != null) {
-
-            if (shapes[i].x > 1000 - 50 || shapes[i].x < 0) {
-                shapes[i].xChange *= -1;
+            if (isInArea(blackholes[j].x, blackholes[j].y,
+                    shapes[i].x, shapes[i].y) ||
+                isInArea(blackholes[j].x, blackholes[j].y,
+                    shapes[i].x + 50, shapes[i].y) ||
+                isInArea(blackholes[j].x, blackholes[j].y,
+                    shapes[i].x, shapes[i].y + 50) ||
+                isInArea(blackholes[j].x, blackholes[j].y,
+                    shapes[i].x + 50, shapes[i].y + 50)) {
+                shapes[i].trappedBy = blackholes[j];
             }
-            if (shapes[i].y > 640 - 50 || shapes[i].y < 50) {
-                shapes[i].yChange *= -1;
-            }
-            newX = shapes[i].x + shapes[i].xChange;
-            newY = shapes[i].y + shapes[i].yChange;
-            ctx.drawImage(shapes[i].obj, newX, newY, 50, 50);
-            shapes[i].x = newX;
-            shapes[i].y = newY;
-
-            for (j = 0; j < blackholes.length; j ++) {
-                if (isInArea(blackholes[j].x, blackholes[j].y,
-                        shapes[i].x, shapes[i].y) ||
-                    isInArea(blackholes[j].x, blackholes[j].y,
-                        shapes[i].x + 50, shapes[i].y) ||
-                    isInArea(blackholes[j].x, blackholes[j].y,
-                        shapes[i].x, shapes[i].y + 50) ||
-                    isInArea(blackholes[j].x, blackholes[j].y,
-                        shapes[i].x + 50, shapes[i].y + 50)) {
-                    shapes[i].trapped = true;
-                }
-            }
-            if (shapes[i].trapped) {
-
-                // Suck into the center
-                // if (blackholes[j].x == shapes[i].x && blackholes[j].y == shapes[i].y) {
-                    shapes.splice(i, 1);
-                    addScore(-50);
-                    // blackholes[j].eaten += 1;
-                    // console.log(backholes[j].eaten);
-                // break;
-                // }
-            }
-
         }
     }
+}
+
+function move(i) {
+    if (shapes[i].x > 1000 - 50 || shapes[i].x < 0) {
+        shapes[i].xChange *= -1;
+    }
+    if (shapes[i].y > 640 - 50 || shapes[i].y < 50) {
+        shapes[i].yChange *= -1;
+    }
+    newX = shapes[i].x + shapes[i].xChange;
+    newY = shapes[i].y + shapes[i].yChange;
+    ctx.drawImage(shapes[i].obj, newX, newY, 50, 50);
+    shapes[i].x = newX;
+    shapes[i].y = newY;
+}
+
+function moveObject() {
+
+    var i, j;
+
+    for (i = 0; i < shapes.length; i ++) {
+        /* If not trapped */
+        if (shapes[i].trappedBy == null) {
+            /* Move as usual */
+            move(i);
+        }
+        /* Try to trap an object if in 100px of a blackhole */
+        trap(i);
+        /* If trapped */
+        if (shapes[i].trappedBy != null) {
+            /* Absorb into the center */
+            absorb(i);
+        }
+    }
+}
+
+function absorb(i) {
+
+    var newX;
+    var xDistance = shapes[i].trappedBy.x - shapes[i].x;
+    var yDistance = shapes[i].trappedBy.y - shapes[i].y;
+    var angle = yDistance / xDistance;
+
+    if (xDistance > 0) {
+        newX = shapes[i].x + 1;
+    }
+    else {
+        newX = shapes[i].x - 1;
+    }
+    if (yDistance > 0) {
+        newY = shapes[i].y + 1;
+    }
+    else {
+        newY = shapes[i].y - 1;
+    }
+
+    // newX = shapes[i].x + 1;
+    // newY = shapes[i].y + angle;
+    ctx.drawImage(shapes[i].obj, newX, newY, 50, 50);
+    shapes[i].x = newX;
+    shapes[i].y = newY;
+
+    /* If the object is already in the center */
+    if (isEdible(i)) {
+        eat(i);
+        addScore(-50);
+    }
+}
+
+function isFull(type, i) {
+    if (shapes[i].trappedBy.type == "blue") {
+        return shapes[i].trappedBy.eaten == 1;
+    }
+    if (shapes[i].trappedBy.type == "purple") {
+        return shapes[i].trappedBy.eaten == 2;
+    }
+    if (shapes[i].trappedBy.type == "black") {
+        return shapes[i].trappedBy.eaten == 3;
+    }
+}
+
+function goAway(i) {
+
+    blackholes.splice(blackholes.indexOf(shapes[i].trappedBy), 1);
+    release(shapes[i].trappedBy);
+}
+
+/* Other trapped-but-not-eaten should be released after the blackhole disappears */
+function release(bh) {
+    for (i = 0; i < shapes.length; i++) {
+        if (shapes[i].trappedBy != null) {
+            if (shapes[i].trappedBy == bh) {
+                shapes[i].trappedBy = null;
+            }
+        }
+    }
+}
+
+function eat(i) {
+    shapes[i].trappedBy.eaten += 1;
+    if (isFull("blue", i)) {
+        goAway(i);
+    }
+    else if (isFull("purple", i)) {
+        goAway(i);
+    }
+    else if (isFull("black", i)) {
+        goAway(i);
+    }
+    shapes.splice(i, 1);
+}
+
+function isEdible(i) {
+    return shapes[i].x <= shapes[i].trappedBy.x + 1 &&
+    shapes[i].x >= shapes[i].trappedBy.x - 1 &&
+    shapes[i].y <= shapes[i].trappedBy.y + 1 &&
+    shapes[i].y >= shapes[i].trappedBy.y - 1;
 }
 
 function drawRandomObject(object) {
