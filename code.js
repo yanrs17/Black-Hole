@@ -3,6 +3,9 @@ var score = 0;
 var gameSpeed = 30;
 var numInitBlackHoles = 10;
 var numObjects = 10;
+var blueAbsorbSpeed = 1;
+var purpleAbsorbSpeed = 4;
+var blackAbsorbSpeed = 9;
 
 
 var blackholeAppearFreq = 1;
@@ -269,22 +272,32 @@ function moveObject() {
 
 function absorb(i) {
 
-    var newX;
+    var newX, blackholeSpeed;
     var xDistance = shapes[i].trappedBy.x - shapes[i].x;
     var yDistance = shapes[i].trappedBy.y - shapes[i].y;
     var angle = yDistance / xDistance;
 
+    if (shapes[i].trappedBy.type == "blue") {
+        blackholeSpeed = blueAbsorbSpeed;
+    }
+    else if (shapes[i].trappedBy.type == "purple") {
+        blackholeSpeed = purpleAbsorbSpeed;
+    }
+    else if (shapes[i].trappedBy.type == "black") {
+        blackholeSpeed = blackAbsorbSpeed;
+    }
+
     if (xDistance > 0) {
-        newX = shapes[i].x + 1;
+        newX = shapes[i].x + blackholeSpeed;
     }
     else {
-        newX = shapes[i].x - 1;
+        newX = shapes[i].x - blackholeSpeed;
     }
     if (yDistance > 0) {
-        newY = shapes[i].y + 1;
+        newY = shapes[i].y + blackholeSpeed;
     }
     else {
-        newY = shapes[i].y - 1;
+        newY = shapes[i].y - blackholeSpeed;
     }
 
     // newX = shapes[i].x + 1;
@@ -344,10 +357,20 @@ function eat(i) {
 }
 
 function isEdible(i) {
-    return shapes[i].x <= shapes[i].trappedBy.x + 1 &&
-    shapes[i].x >= shapes[i].trappedBy.x - 1 &&
-    shapes[i].y <= shapes[i].trappedBy.y + 1 &&
-    shapes[i].y >= shapes[i].trappedBy.y - 1;
+    var offset;
+    if (shapes[i].trappedBy.type == "blue") {
+        offset = blueAbsorbSpeed;
+    }
+    else if (shapes[i].trappedBy.type == "purple") {
+        offset = purpleAbsorbSpeed;
+    }
+    else if (shapes[i].trappedBy.type == "black") {
+        offset = blackAbsorbSpeed;
+    }
+    return shapes[i].x <= shapes[i].trappedBy.x + offset &&
+    shapes[i].x >= shapes[i].trappedBy.x - offset &&
+    shapes[i].y <= shapes[i].trappedBy.y + offset &&
+    shapes[i].y >= shapes[i].trappedBy.y - offset;
 }
 
 function drawRandomObject(object) {
