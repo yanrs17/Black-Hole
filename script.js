@@ -1,19 +1,22 @@
-var INIT_TIME = 60;
+var INIT_TIME = 15;
 var GAME_SPEED = 30;
-var NUM_INIT_BLACKHOLE = 0;
-var NUM_OBJECT = 10;
+var NUM_INIT_BLACKHOLE = 22;
+var NUM_OBJECT = 3;
 var BLUE_ABSORB_SPEED = 1;
 var PURPLE_ABSORB_SPEED = 4;
 var BLACK_ABSORB_SPEED = 7;
 var BLACKHOLE_APPEAR_FREQ = 2;
 
-if (typeof(Storage) === "undefined") {
+if (typeof(Storage) === "undefined")
     alert("Web Storage is not supported.");
-}
-
-if (localStorage.highScore == null) localStorage.highScore = 0;
-
-
+if (localStorage.highScore1 == null)
+    localStorage.highScore1 = 0;
+if (localStorage.highScore2 == null)
+    localStorage.highScore2 = 0;
+if (localStorage.highScore3 == null)
+    localStorage.highScore3 = 0;
+if (localStorage.tranScore == null)
+    localStorage.tranScore = 0;
 var shapes = new Array();
 var Shape = function (x, y, xChange, yChange, type) {
     this.x = x;
@@ -27,28 +30,26 @@ var blackholes = new Array();
 var Blackhole = function (x, y, type) {
     this.x = x;
     this.y = y;
-    // type can be blue, purple or black
-    this.type = type;
+    this.type = type; /* type can be blue, purple or black */
     this.eaten = 0;
 }
 var keepOnlyOneCountDown = 0;
 window.onload = function () {
 
-	// Init canvas
+	/* Initialize canvas */
     window.c = document.getElementById("canvas");
 	window.ctx = c.getContext("2d");
     window.paused = false;
     window.status = 0;
     window.time;
     window.score = 0;
-    c.setAttribute("onmousedown", "mouseDown(event)");
 
-    // ctx.lineWidth = "6";
+    c.setAttribute("onmousedown", "mouseDown(event)");
     drawTransitionalScreen('BLACKHOLE', 'START');
 }
 
 function drawTransitionalScreen(title, button) {
-
+    
     ctx.clearRect(0, 0, 1000, 640);
     ctx.rect(300, 150, 400, 360); // Start frame
     ctx.stroke();
@@ -58,16 +59,23 @@ function drawTransitionalScreen(title, button) {
     ctx.font = "20px Arial";
     ctx.fillText(title, 440, 237);
 
-    ctx.rect(400, 300, 200, 60); // High Score
+    ctx.rect(400, 300, 200, 100); // High Score
     ctx.stroke();
     ctx.font = "20px Arial";
-    ctx.fillText("HIGH SCORE", 440, 327);
-    ctx.fillText(localStorage.highScore + " POINTS", 455, 350);
-
-    ctx.rect(425, 400, 150, 60); // Start Button
+    if (status == 3) {
+        ctx.fillText("SCORE", 460, 327);
+        localStorage.tranScore = score;
+        ctx.fillText(localStorage.tranScore + " POINTS", 455, 350);
+    } else {
+        ctx.fillText("HIGH SCORE", 440, 327);
+        ctx.fillText(localStorage.highScore1 + " POINTS", 455, 350);
+        ctx.fillText(localStorage.highScore2 + " POINTS", 455, 370);
+        ctx.fillText(localStorage.highScore3 + " POINTS", 455, 390);
+    }
+    ctx.rect(425, 430, 150, 60); // Start Button
     ctx.stroke();
     ctx.font = "20px Arial";
-    ctx.fillText(button, 470, 435);
+    ctx.fillText(button, 470, 465);
 }
 
 function isOnButton(x, y) {
@@ -83,31 +91,21 @@ function mouseDown(event) {
     pos = getMousePos(event);
 
     if (status == 0 || status == 3 || status == 4 || status == 5) {
-        if (isOnButton(pos.x, pos.y)) {
-            checkStatus();
-        }
+        if (isOnButton(pos.x, pos.y)) checkStatus();
     }
     else {
-        if (isOnPause(pos.x, pos.y)) {
-            pause();
-            return; //?
-        }
-
+        if (isOnPause(pos.x, pos.y)) pause();
         if (!paused) {
             for (var i = 0; i < blackholes.length; i ++) {
-
                 // If it is a blackhole
                 if (isOnBlackhole(blackholes[i].x, blackholes[i].y, pos.x, pos.y)) {
                     // Remove the blackhole
-                    if (blackholes[i].type == "blue") {
+                    if (blackholes[i].type == "blue")
                         addScore(5);
-                    }
-                    else if (blackholes[i].type == "purple") {
+                    else if (blackholes[i].type == "purple")
                         addScore(10);
-                    }
-                    else if (blackholes[i].type == "black") {
+                    else if (blackholes[i].type == "black")
                         addScore(20);
-                    }
                     release(blackholes[i]);
                     blackholes.splice(i, 1);
                     return;
@@ -118,9 +116,6 @@ function mouseDown(event) {
 }
 
 function start() {
-
-    // clearTimeout(countDown);
-    // clearTimeout(moveObjects);
 
     shapes = [];
     blackholes = [];
@@ -137,7 +132,7 @@ function start() {
 
     // Add Level
     ctx.font = "20px Arial";
-    ctx.fillText("Level " + status, 10, 25); // Text, x, y
+    ctx.fillText("Level " + status, 10, 25);
 
     // Add Score
     if (status == 1) {
@@ -145,17 +140,12 @@ function start() {
         addScore(200);
     }
     else addScore(0);
-    // else if (status == 2) score = 0;
-
 
     // Add Pause
     ctx.font = "15px Arial";
     ctx.fillText("PAUSE", 700, 25);
     ctx.rect(690, 10, 70, 20);
     ctx.stroke();
-
-    // Install the functionality of pause
-    // ??
 
     // Add time left
     ctx.font = "15px Arial";
@@ -206,38 +196,40 @@ function countDown() {
         ctx.fillStyle = "black";
         time --;
         ctx.font = "15px Arial";
-        if (time > 1) {
-            ctx.fillText(time + " seconds", 900, 25);
-        }
-        else if (time == 1 || time == 0) {
+        if (time > 1) ctx.fillText(time + " seconds", 900, 25);
+        else if (time == 1 || time == 0)
             ctx.fillText(time + " second", 900, 25);
-        }
         else {
-            if (score > localStorage.highScore) localStorage.highScore = score;
+            if (status == 2) {
+                alert(score);
+                if (score > localStorage.highScore1){
+                    localStorage.highScore3 = localStorage.highScore2;
+                    localStorage.highScore2 = localStorage.highScore1;
+                    localStorage.highScore1 = score;
+                }
+                else if (score > localStorage.highScore2){
+                    localStorage.highScore3 = localStorage.highScore2;
+                    localStorage.highScore2 = score;
+                }
+                else if (score > localStorage.highScore3){
+                    localStorage.highScore3 = score;
+                }
+                   
+            }
             checkStatus('win');
         }
 
-        // ??
-        if (time % Math.floor(BLACKHOLE_APPEAR_FREQ / status) == 0) {
+        if (time % Math.floor(BLACKHOLE_APPEAR_FREQ / status) == 0)
             drawRandomBlackhole();
-        }
     }
 
-    if (paused) {
-        clearTimeout(countDown);
-    }
-    else {
-        setTimeout(countDown, 1000);
-    }
+    if (paused) clearTimeout(countDown);
+    else setTimeout(countDown, 1000);
 
 }
 
 function moveObjects() {
-    // Always clear the canvas after drawing each frame
 
-    //console.log(status);
-    // Draw here, including conditionals
-    //checkStatus();
     if (status == 1 || status == 2) {
         ctx.clearRect(0, 40, 1000, 640);
         moveBlackhole();
@@ -247,16 +239,9 @@ function moveObjects() {
             checkStatus('lose');
         }
         if (paused) clearTimeout(moveObjects);
-        else {
-            setTimeout(moveObjects, 1000 / GAME_SPEED);
-        }
+        else setTimeout(moveObjects, 1000 / GAME_SPEED);
     }
-    else {
-        clearTimeout(moveObjects);
-        //console.log(status);
-        // checkStatus();
-    }
-    // console.log("haha");
+    else clearTimeout(moveObjects);
 }
 
 function checkStatus(code) {
@@ -287,11 +272,11 @@ function checkStatus(code) {
 
 function goToStatus() {
     // console.log(status + " goToStatus");
-
+    ctx.clearRect(0, 0, 1000, 640);
     if (status == 0) drawTransitionalScreen('BLACKHOLE', 'START');
     else if (status == 1) start();
     else if (status == 2) start();
-    else if (status == 3) drawTransitionalScreen('YOU WIN!', 'NEXT');
+    else if (status == 3) drawTransitionalScreen('LEVEL 1', 'NEXT');
     else if (status == 4) drawTransitionalScreen('YOU LOSE!', 'FINISH');
     else if (status == 5) drawTransitionalScreen('YOU WIN!', 'FINISH');
 }
@@ -308,24 +293,19 @@ function getMousePos(event) {
 
 function isOnBlackhole(xBlackhole, yBlackhole, xSelected, ySelected) {
     return xBlackhole <= xSelected &&
-        xSelected <= (xBlackhole + 50) &&
+        xSelected <= (xBlackhole + 100) &&
         yBlackhole <= ySelected &&
-        ySelected <= (yBlackhole + 50)
+        ySelected <= (yBlackhole + 100)
 }
 
 function pause() {
 
-    if (!paused) {
-        paused = true;
-    }
+    if (!paused) paused = true;
     else {
-        // alert("haha");
         paused = false;
         setTimeout(countDown, 1000);
         setTimeout(moveObjects, 1000 / GAME_SPEED);
     }
-    // clearTimeout(countDown);
-    // clearTimeout(moveObjects);
 }
 
 function moveBlackhole(){
@@ -349,11 +329,6 @@ function isInArea(xBlackhole, yBlackhole, xSelected, ySelected) {
     rightBoundary = xBlackhole + 75;
     topBoundary = yBlackhole - 25;
     bottomBoundary = yBlackhole + 75;
-
-    // // Need to delete later
-    // ctx.strokeStyle = "red"; // Style
-    // ctx.rect(leftBoundary, topBoundary, 100, 100); // x, y, width, height
-    // ctx.stroke(); // Draw
 
     return xSelected > leftBoundary &&
         xSelected < rightBoundary &&
@@ -379,17 +354,14 @@ function trap(i) {
 }
 
 function move(i) {
-    if (shapes[i].x > 1000 - 50 || shapes[i].x < 0) {
+
+    if (shapes[i].x > 1000 - 50 || shapes[i].x < 0)
         shapes[i].xChange *= -1;
-    }
-    if (shapes[i].y > 640 - 50 || shapes[i].y < 80) {
+    if (shapes[i].y > 640 - 50 || shapes[i].y < 80)
         shapes[i].yChange *= -1;
-    }
     newX = shapes[i].x + shapes[i].xChange;
     newY = shapes[i].y + shapes[i].yChange;
-
     drawEachObject(newX, newY, shapes[i].obj);
-
     shapes[i].x = newX;
     shapes[i].y = newY;
 }
@@ -397,20 +369,13 @@ function move(i) {
 function moveObject() {
 
     var i, j;
-
     for (i = 0; i < shapes.length; i ++) {
-        /* If not trapped */
-        if (shapes[i].trappedBy == null) {
-            /* Move as usual */
-            move(i);
-        }
+        /* If not trapped: Move as usual */
+        if (shapes[i].trappedBy == null) move(i);
         /* Try to trap an object if in 100px of a blackhole */
         trap(i);
-        /* If trapped */
-        if (shapes[i].trappedBy != null) {
-            /* Absorb into the center */
-            absorb(i);
-        }
+        /* If trapped: Absorb into the center */
+        if (shapes[i].trappedBy != null) absorb(i);
     }
 }
 
@@ -421,33 +386,19 @@ function absorb(i) {
     var yDistance = shapes[i].trappedBy.y - shapes[i].y;
     var angle = yDistance / xDistance;
 
-    if (shapes[i].trappedBy.type == "blue") {
+    if (shapes[i].trappedBy.type == "blue")
         blackholeSpeed = BLUE_ABSORB_SPEED;
-    }
-    else if (shapes[i].trappedBy.type == "purple") {
+    else if (shapes[i].trappedBy.type == "purple")
         blackholeSpeed = PURPLE_ABSORB_SPEED;
-    }
-    else if (shapes[i].trappedBy.type == "black") {
+    else if (shapes[i].trappedBy.type == "black")
         blackholeSpeed = BLACK_ABSORB_SPEED;
-    }
 
-    if (xDistance > 0) {
-        newX = shapes[i].x + blackholeSpeed;
-    }
-    else {
-        newX = shapes[i].x - blackholeSpeed;
-    }
-    if (yDistance > 0) {
-        newY = shapes[i].y + blackholeSpeed;
-    }
-    else {
-        newY = shapes[i].y - blackholeSpeed;
-    }
+    if (xDistance > 0) newX = shapes[i].x + blackholeSpeed;
+    else newX = shapes[i].x - blackholeSpeed;
+    if (yDistance > 0) newY = shapes[i].y + blackholeSpeed;
+    else newY = shapes[i].y - blackholeSpeed;
 
-    // newX = shapes[i].x + 1;
-    // newY = shapes[i].y + angle;
     drawEachObject(newX, newY, shapes[i].obj)
-
     shapes[i].x = newX;
     shapes[i].y = newY;
 
@@ -459,15 +410,13 @@ function absorb(i) {
 }
 
 function isFull(type, i) {
-    if (shapes[i].trappedBy.type == "blue") {
+
+    if (shapes[i].trappedBy.type == "blue")
         return shapes[i].trappedBy.eaten == 1;
-    }
-    if (shapes[i].trappedBy.type == "purple") {
+    if (shapes[i].trappedBy.type == "purple")
         return shapes[i].trappedBy.eaten == 2;
-    }
-    if (shapes[i].trappedBy.type == "black") {
+    if (shapes[i].trappedBy.type == "black")
         return shapes[i].trappedBy.eaten == 3;
-    }
 }
 
 function goAway(i) {
@@ -478,40 +427,31 @@ function goAway(i) {
 
 /* Other trapped-but-not-eaten should be released after the blackhole disappears */
 function release(bh) {
-    for (i = 0; i < shapes.length; i++) {
-        if (shapes[i].trappedBy != null) {
-            if (shapes[i].trappedBy == bh) {
+
+    for (i = 0; i < shapes.length; i++)
+        if (shapes[i].trappedBy != null)
+            if (shapes[i].trappedBy == bh)
                 shapes[i].trappedBy = null;
-            }
-        }
-    }
 }
 
 function eat(i) {
+
     shapes[i].trappedBy.eaten += 1;
-    if (isFull("blue", i)) {
-        goAway(i);
-    }
-    else if (isFull("purple", i)) {
-        goAway(i);
-    }
-    else if (isFull("black", i)) {
-        goAway(i);
-    }
+    if (isFull("blue", i)) goAway(i);
+    else if (isFull("purple", i)) goAway(i);
+    else if (isFull("black", i)) goAway(i);
     shapes.splice(i, 1);
 }
 
 function isEdible(i) {
+
     var offset;
-    if (shapes[i].trappedBy.type == "blue") {
+    if (shapes[i].trappedBy.type == "blue")
         offset = BLUE_ABSORB_SPEED;
-    }
-    else if (shapes[i].trappedBy.type == "purple") {
+    else if (shapes[i].trappedBy.type == "purple")
         offset = PURPLE_ABSORB_SPEED;
-    }
-    else if (shapes[i].trappedBy.type == "black") {
+    else if (shapes[i].trappedBy.type == "black")
         offset = BLACK_ABSORB_SPEED;
-    }
     return shapes[i].x <= shapes[i].trappedBy.x + offset &&
     shapes[i].x >= shapes[i].trappedBy.x - offset &&
     shapes[i].y <= shapes[i].trappedBy.y + offset &&
@@ -519,6 +459,7 @@ function isEdible(i) {
 }
 
 function drawRandomObject(object) {
+
     // Generate rand # btw 0-950
     var x = Math.floor(Math.random() * 951);
     // Generate rand # btw 80-590
@@ -697,21 +638,21 @@ function drawRandomBlackhole() {
 
     do {
         isOverlapped = false;
-        // Generate rand # btw 0-950
+        /* Generate rand # btw 0-950 */
         x = Math.floor(Math.random() * 951);
-        // Generate rand # btw 40-590
+        /* Generate rand # btw 40-590 */
         y = Math.floor(40 + Math.random() * 551);
 
-        // Generate rand # btw 1-14
+        /* Generate rand # btw 1-14 */
         type = Math.floor(Math.random() * 14 + 1);
-        // 1-9      for blue    blackhole
-        // 10-13    for purple  blackhole
-        // 14       for black   blackhole
+        /* 1-9      for blue    blackhole */
+        /* 10-13    for purple  blackhole */
+        /* 14       for black   blackhole */
 
-        // Dealing with overlapping
+        /* Dealing with overlapping */
         for (i = 0; i < blackholes.length; i ++) {
 
-            // If overlapped
+            /* If overlapped */
             if (isOnBlackhole(blackholes[i].x, blackholes[i].y, x, y) ||
                 isOnBlackhole(blackholes[i].x,
             blackholes[i].y, x + 50, y) ||
@@ -723,7 +664,7 @@ function drawRandomBlackhole() {
             }
 
         }
-        // If overlapped, find a new position until not overlapped
+        /* If overlapped, find a new position until not overlapped */
     } while (isOverlapped);
 
 
