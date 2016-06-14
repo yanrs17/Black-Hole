@@ -1,12 +1,12 @@
-var time = 60 + 1;
-var score = 0;
-var gameSpeed = 30;
-var numInitBlackHoles = 10;
-var numObjects = 10;
-var blueAbsorbSpeed = 1;
-var purpleAbsorbSpeed = 4;
-var blackAbsorbSpeed = 6;
-var blackholeAppearFreq = 1;
+var INIT_TIME = 2;
+var SCORE = 0;
+var GAME_SPEED = 30;
+var NUM_INIT_BLACKHOLE = 1;
+var NUM_OBJECT = 2;
+var BLUE_ABSORB_SPEED = 1;
+var PURPLE_ABSORB_SPEED = 4;
+var BLACK_ABSORB_SPEED = 6;
+var BLACKHOLE_APPEAR_FREQ = 2;
 
 var shapes = new Array();
 var Shape = function (x, y, xChange, yChange, type) {
@@ -27,26 +27,31 @@ var Blackhole = function (x, y, type) {
     this.eaten = 0;
 }
 
-// // Index of blackholes that are full.
-// var full = new Array();
-
 window.onload = function () {
 
 	// Init canvas
     window.c = document.getElementById("canvas");
 	window.ctx = c.getContext("2d");
     window.paused = false;
+    window.status = 0;
+    window.time;
     c.setAttribute("onmousedown", "mouseDown(event)");
-    window.level = 0;
 
     // ctx.lineWidth = "6";
+    drawTransitionalScreen('BLACKHOLE', 'START');
+}
+var keepOnlyOneCountDown = 0;
+
+function drawTransitionalScreen(title, button) {
+
+    ctx.clearRect(0, 0, 1000, 640);
     ctx.rect(300, 150, 400, 360); // Start frame
     ctx.stroke();
 
     ctx.rect(400, 200, 200, 60); // Title
     ctx.stroke();
     ctx.font = "20px Arial";
-    ctx.fillText("BLACKHOLE", 440, 237);
+    ctx.fillText(title, 440, 237);
 
     ctx.rect(400, 300, 200, 60); // High Score
     ctx.stroke();
@@ -57,28 +62,30 @@ window.onload = function () {
     ctx.rect(425, 400, 150, 60); // Start Button
     ctx.stroke();
     ctx.font = "20px Arial";
-    ctx.fillText("START", 470, 435);
+    ctx.fillText(button, 470, 435);
+}
+
+function isOnButton(x, y) {
+    return x > 425 && x < 425 + 150 && y > 400 && y < 400 + 60;
+}
+
+function isOnPause(x, y){
+    return pos.x > 690 && pos.x < 690 + 70 && pos.y > 10 && pos.y < 70 + 2;
 }
 
 function mouseDown(event) {
 
     pos = getMousePos(event);
 
-    if (level == 0) {
-// ctx.rect(425, 400, 150, 60)
-        if (pos.x > 425 &&
-            pos.x < 425 + 150 &&
-            pos.y > 400 &&
-            pos.y < 400 + 60) {
-                start();
+    if (status == 0 || status == 3 || status == 4 || status == 5) {
+        if (isOnButton(pos.x, pos.y)) {
+            checkStatus();
         }
     }
-    else if (level == 1 || level == 2) {
-        if (pos.x > 690 &&
-                pos.x < 690 + 70 &&
-                pos.y > 10 &&
-                pos.y < 70 + 2) {
-                pause();
+    else {
+        if (isOnPause(pos.x, pos.y)) {
+            pause();
+            return; //?
         }
 
         if (!paused) {
@@ -106,10 +113,16 @@ function mouseDown(event) {
 }
 
 function start() {
+
+    // clearTimeout(countDown);
+    // clearTimeout(moveObjects);
+
+    shapes = [];
+    blackholes = [];
     // Params
     var heightOfDivider = 40;
     var i;
-    level = 1;
+    time = INIT_TIME;
 
     // Draw the line
     ctx.beginPath();
@@ -119,10 +132,16 @@ function start() {
 
     // Add Level
     ctx.font = "20px Arial";
-    ctx.fillText("Level " + level, 10, 25); // Text, x, y
+    ctx.fillText("Level " + status, 10, 25); // Text, x, y
 
     // Add Score
-    addScore(200);
+    if (status == 1) {
+        SCORE = 0;
+        addScore(200);
+    }
+    else addScore(0);
+    // else if (status == 2) SCORE = 0;
+
 
     // Add Pause
     ctx.font = "15px Arial";
@@ -137,7 +156,7 @@ function start() {
     ctx.font = "15px Arial";
     ctx.fillText(time + " seconds", 900, 25);
 
-    for (i = 0; i < numObjects; i++) {
+    for (i = 0; i < NUM_OBJECT; i++) {
         drawRandomObject(i % 10);
     }
 
@@ -153,41 +172,49 @@ function start() {
     // ctx.imgBlackHole3.crossOrigin = 'anonymous';
 
     ctx.imgBlackHole1.onload = function(){
-      for (i = 0; i < numInitBlackHoles; i++) {
+      for (i = 0; i < NUM_INIT_BLACKHOLE; i++) {
           drawRandomBlackhole();
       }
     }
 
     moveObjects();
-    countDown();
+    if (keepOnlyOneCountDown == 0) {
+        countDown();
+        keepOnlyOneCountDown = 1;
+    }
 }
 
 function addScore(s) {
 
-    score += s;
+    SCORE += s;
+    ctx.fillStyle = "black";
     ctx.clearRect(500, 5, 150, 30);
     ctx.font = "20px Arial";
-    ctx.fillText("Score: " + score, 500, 25);
+    ctx.fillText("Score: " + SCORE, 500, 25);
 
 }
 
 function countDown() {
-    window.ctx.clearRect(900, 0, 100, 30);
-    time --;
-    ctx.font = "15px Arial";
-    if (time > 1) {
-        ctx.fillText(time + " seconds", 900, 25);
-    }
-    else if (time == 1 || time == 0) {
-        ctx.fillText(time + " second", 900, 25);
-    }
-    // else!!
-    // else {
-    //     break;
-    // }
 
-    if (time % blackholeAppearFreq == 0) {
-        drawRandomBlackhole();
+    if (status == 1 || status == 2) {
+        ctx.clearRect(900, 0, 100, 30);
+        ctx.fillStyle = "black";
+        time --;
+        ctx.font = "15px Arial";
+        if (time > 1) {
+            ctx.fillText(time + " seconds", 900, 25);
+        }
+        else if (time == 1 || time == 0) {
+            ctx.fillText(time + " second", 900, 25);
+        }
+        else {
+            checkStatus('win');
+        }
+
+        // ??
+        if (time % Math.floor(BLACKHOLE_APPEAR_FREQ / status) == 0) {
+            drawRandomBlackhole();
+        }
     }
 
     if (paused) {
@@ -201,17 +228,66 @@ function countDown() {
 
 function moveObjects() {
     // Always clear the canvas after drawing each frame
-    window.ctx.clearRect(0, 40, 1000, 640);
 
+    //console.log(status);
     // Draw here, including conditionals
-    moveBlackhole();
-    moveObject();
-    if (paused) {
-        clearTimeout(moveObjects);
+    //checkStatus();
+    if (status == 1 || status == 2) {
+        ctx.clearRect(0, 40, 1000, 640);
+        moveBlackhole();
+        moveObject();
+        if (shapes.length <= 0) {
+            console.log("You lose!");
+            checkStatus('lose');
+        }
+        if (paused) clearTimeout(moveObjects);
+        else {
+            setTimeout(moveObjects, 1000 / GAME_SPEED);
+        }
     }
     else {
-        setTimeout(moveObjects, 1000 / gameSpeed);
+        clearTimeout(moveObjects);
+        //console.log(status);
+        // checkStatus();
     }
+    // console.log("haha");
+}
+
+function checkStatus(code) {
+
+    // console.log('before: ' + status);
+
+
+
+    // if (status == 3 || status == 4 || status == 5) {
+    //     console.log("haha");
+    //     clearTimeout(countDown);
+    //     // clearTimeout(moveObjects);
+    // }
+
+    if (status == 0) status = 1;
+    else if (status == 1 && code == 'win') status = 3;
+    else if (status == 1 && code == 'lose') status = 4;
+    else if (status == 1) console.log("Something is wrong"); // Debugging
+    else if (status == 2 && code == 'win') status = 5;
+    else if (status == 2 && code == 'lose') status = 4;
+    else if (status == 2) console.log("Something is wrong"); // Debugging
+    else if (status == 3) status = 2;
+    else if (status == 4) status = 0;
+    else if (status == 5) status = 0;
+    // console.log('after: ' + status);
+    goToStatus();
+}
+
+function goToStatus() {
+    // console.log(status + " goToStatus");
+
+    if (status == 0) drawTransitionalScreen('BLACKHOLE', 'START');
+    else if (status == 1) start();
+    else if (status == 2) start();
+    else if (status == 3) drawTransitionalScreen('YOU WIN!', 'NEXT');
+    else if (status == 4) drawTransitionalScreen('YOU LOSE!', 'FINISH');
+    else if (status == 5) drawTransitionalScreen('YOU WIN!', 'FINISH');
 }
 
 //window.addEventListener('mousedown', getMousePos, false);
@@ -240,7 +316,7 @@ function pause() {
         // alert("haha");
         paused = false;
         setTimeout(countDown, 1000);
-        setTimeout(moveObjects, 1000 / gameSpeed);
+        setTimeout(moveObjects, 1000 / GAME_SPEED);
     }
     // clearTimeout(countDown);
     // clearTimeout(moveObjects);
@@ -281,7 +357,7 @@ function isInArea(xBlackhole, yBlackhole, xSelected, ySelected) {
 
 function trap(i) {
     for (j = 0; j < blackholes.length; j ++) {
-        if (shapes[i] != null) {
+        if (shapes[i] != null || shapes[i].trappedBy == null) {
             if (isInArea(blackholes[j].x, blackholes[j].y,
                     shapes[i].x, shapes[i].y) ||
                 isInArea(blackholes[j].x, blackholes[j].y,
@@ -340,13 +416,13 @@ function absorb(i) {
     var angle = yDistance / xDistance;
 
     if (shapes[i].trappedBy.type == "blue") {
-        blackholeSpeed = blueAbsorbSpeed;
+        blackholeSpeed = BLUE_ABSORB_SPEED;
     }
     else if (shapes[i].trappedBy.type == "purple") {
-        blackholeSpeed = purpleAbsorbSpeed;
+        blackholeSpeed = PURPLE_ABSORB_SPEED;
     }
     else if (shapes[i].trappedBy.type == "black") {
-        blackholeSpeed = blackAbsorbSpeed;
+        blackholeSpeed = BLACK_ABSORB_SPEED;
     }
 
     if (xDistance > 0) {
@@ -422,13 +498,13 @@ function eat(i) {
 function isEdible(i) {
     var offset;
     if (shapes[i].trappedBy.type == "blue") {
-        offset = blueAbsorbSpeed;
+        offset = BLUE_ABSORB_SPEED;
     }
     else if (shapes[i].trappedBy.type == "purple") {
-        offset = purpleAbsorbSpeed;
+        offset = PURPLE_ABSORB_SPEED;
     }
     else if (shapes[i].trappedBy.type == "black") {
-        offset = blackAbsorbSpeed;
+        offset = BLACK_ABSORB_SPEED;
     }
     return shapes[i].x <= shapes[i].trappedBy.x + offset &&
     shapes[i].x >= shapes[i].trappedBy.x - offset &&
