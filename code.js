@@ -1,22 +1,21 @@
 var time = 60 + 1;
 var score = 0;
 var gameSpeed = 30;
-var numInitBlackHoles = 10;
+var numInitBlackHoles = 5;
 var numObjects = 10;
 var blueAbsorbSpeed = 1;
 var purpleAbsorbSpeed = 4;
-var blackAbsorbSpeed = 9;
-
-
+var blackAbsorbSpeed = 6;
 var blackholeAppearFreq = 1;
+
 var shapes = new Array();
-var Shape = function (x, y, xChange, yChange, obj) {
+var Shape = function (x, y, xChange, yChange, type) {
     this.x = x;
     this.y = y;
     this.xChange = xChange;
     this.yChange = yChange;
     this.trappedBy = null;
-    this.obj = obj;
+    this.obj = type;
 }
 
 var blackholes = new Array();
@@ -69,16 +68,8 @@ window.onload = function () {
     ctx.font = "15px Arial";
     ctx.fillText(time + " seconds", 900, 25);
 
-    // Objects
-    // Need to change to diff shape
-    ctx.imgObject = new Image();
-    ctx.imgObject.src = 'img/object1.png';
-
-    ctx.imgObject.onload = function(){
-      for (i = 0; i < numObjects; i++) {
-          // i < 2 needs to change to i < 10 later
-          drawRandomObject(ctx.imgObject);
-      }
+    for (i = 0; i < numObjects; i++) {
+        drawRandomObject(i % 10);
     }
 
     // Blackholes
@@ -156,10 +147,10 @@ function getMousePos(event) {
 }
 
 function isOnBlackhole(xBlackhole, yBlackhole, xSelected, ySelected) {
-    return xBlackhole < xSelected &&
-        xSelected < (xBlackhole + 50) &&
-        yBlackhole < ySelected &&
-        ySelected < (yBlackhole + 50)
+    return xBlackhole <= xSelected &&
+        xSelected <= (xBlackhole + 50) &&
+        yBlackhole <= ySelected &&
+        ySelected <= (yBlackhole + 50)
 }
 
 function mouseDown(event) {
@@ -240,12 +231,14 @@ function move(i) {
     if (shapes[i].x > 1000 - 50 || shapes[i].x < 0) {
         shapes[i].xChange *= -1;
     }
-    if (shapes[i].y > 640 - 50 || shapes[i].y < 50) {
+    if (shapes[i].y > 640 - 50 || shapes[i].y < 80) {
         shapes[i].yChange *= -1;
     }
     newX = shapes[i].x + shapes[i].xChange;
     newY = shapes[i].y + shapes[i].yChange;
-    ctx.drawImage(shapes[i].obj, newX, newY, 50, 50);
+
+    drawEachObject(newX, newY, shapes[i].obj);
+
     shapes[i].x = newX;
     shapes[i].y = newY;
 }
@@ -302,7 +295,8 @@ function absorb(i) {
 
     // newX = shapes[i].x + 1;
     // newY = shapes[i].y + angle;
-    ctx.drawImage(shapes[i].obj, newX, newY, 50, 50);
+    drawEachObject(newX, newY, shapes[i].obj)
+
     shapes[i].x = newX;
     shapes[i].y = newY;
 
@@ -376,14 +370,174 @@ function isEdible(i) {
 function drawRandomObject(object) {
     // Generate rand # btw 0-950
     var x = Math.floor(Math.random() * 951);
-    // Generate rand # btw 40-590
-    var y = Math.floor(50 + Math.random() * 551);
+    // Generate rand # btw 80-590
+    var y = Math.floor(80 + Math.random() * 511);
     //var angle = 0; // Need to be changed later
     // Generate rand # btw 1-10
     var xChange = Math.floor(Math.random() * 10 + 1);
     var yChange = Math.floor(Math.random() * 10 + 1);
-    ctx.drawImage(object, x, y, 50, 50);
+
+    drawEachObject(x, y, object.obj);
+
+    //ctx.drawImage(object, x, y, 50, 50);
     shapes.push(new Shape(x, y, xChange, yChange, object));
+}
+
+function drawEachObject(x, y, type) {
+
+    if (type == 0) { // moon
+        ctx.beginPath();
+        ctx.fillStyle="#0000ff";
+        ctx.moveTo(x,y);
+        ctx.bezierCurveTo(x+33.8, y-19.5, x+50.7, y+13, x+32.5, y+32.5);//
+        ctx.bezierCurveTo(x+36.4, y+18.2, x+28.6, y-5.2, x, y);//
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    if (type == 1) { // spaceship
+        // Draw bottom
+        ctx.beginPath();
+        ctx.moveTo(x, y); //28.4, 16.9
+        ctx.bezierCurveTo(x, y+5.6, x-11, y+10.2, x-24.8, y+10.2); //28.4, 19.7, 22.9, 22.0, 16.0, 22.0
+        ctx.bezierCurveTo(x-38.6, y+10.2, x-49.6, y+5.6, x-49.6, y); //9.1, 22.0, 3.6, 19.7, 3.6, 16.9
+        ctx.bezierCurveTo(x-49.6, y-5.6, x-38.6, y-10.2, x-24.8, y-10.2); //3.6, 14.1, 9.1, 11.8, 16.0, 11.8
+        ctx.bezierCurveTo(x-11, y-10.2, x, y-5.6, x, y); //22.9, 11.8, 28.4, 14.1, 28.4, 16.9
+        ctx.closePath();
+        ctx.fillStyle = "rgb(111, 111, 100)";
+        ctx.fill();
+
+        //	Draw saucer top
+        ctx.beginPath();
+        ctx.moveTo(x-12.2, y-9.8); //22.3, 12.0
+        ctx.bezierCurveTo(x-12.2, y-7.2, x-18, y-5.2, x-25, y-5.2); //22.3, 13.3, 19.4, 14.3, 15.9, 14.3
+        ctx.bezierCurveTo(x-32, y-5.2,x-37.6, y-7.2, x-37.6, y-9.8); //12.4, 14.3, 9.6, 13.3, 9.6, 12.0
+        ctx.bezierCurveTo(x-37.6, y-12.2, x-32, y-14.4, x-25, y-14.4); //9.6, 10.8, 12.4, 9.7, 15.9, 9.7
+        ctx.bezierCurveTo(x-18, y-14.4, x-12.2, y-12.2, x-12.2, y-13.8); //19.4, 9.7, 22.3, 10.8, 22.3, 12.0
+        ctx.closePath();
+        ctx.fillStyle = "rgb(15, 233, 77)";
+        ctx.fill();
+    }
+
+    if(type == 2){ //rocket
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.bezierCurveTo(x-2, y-18, x-5, y-27, x+10, y-35);
+        ctx.bezierCurveTo(x+25, y-27, x+22, y-18, x+20, y); //9.1, 22.0, 3.6, 19.7, 3.6, 16.9
+        ctx.lineTo(x+25,y+15);
+        ctx.lineTo(x+18,y+05);
+        ctx.lineTo(x+20,y+15);
+        ctx.lineTo(x+14,y+05);
+        ctx.lineTo(x+10,y+15);
+        ctx.lineTo(x+06,y+05);
+        ctx.lineTo(x,y+15);
+        ctx.lineTo(x+2,y+5);
+        ctx.lineTo(x-5,y+15);
+        ctx.closePath();
+        ctx.fillStyle = "rgb(230, 50, 233)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x+10,y-15,5,0,2*Math.PI);
+        ctx.fillStyle = "rgb(15, 255, 255)";
+        ctx.fill();
+    }
+
+    if (type == 3){ // star
+        ctx.beginPath();
+        ctx.moveTo(x,y); //100, 100
+        ctx.lineTo(x+5,y-20);
+        ctx.lineTo(x+10,y);
+        ctx.lineTo(x+30,y+5);
+        ctx.lineTo(x+10,y+10);
+        ctx.lineTo(x+05,y+30);
+        ctx.lineTo(x+0,y+10);
+        ctx.lineTo(x-20,y+5);
+        ctx.closePath();
+        ctx.fillStyle = "rgb(60, 50, 200)";
+        ctx.fill();
+    }
+
+    if (type == 4){ // Satellite
+        ctx.beginPath();
+        ctx.rect(x, y, 15, 5);
+        ctx.rect(x+18, y-5, 8, 20);
+        ctx.rect(x+29, y, 15, 5);
+        ctx.fillStyle = "rgb(10, 50, 2)";
+        ctx.fill();
+        ctx.moveTo(x+15,y+3);
+        ctx.lineTo(x+18,y+3);
+        ctx.moveTo(x+26,y+3);
+        ctx.lineTo(x+29,y+3);
+        ctx.moveTo(x+22,y-5);
+        ctx.lineTo(x+22,y-10);
+        ctx.stroke();
+    }
+
+    if (type == 5){ // Satellite2
+        ctx.beginPath();
+        ctx.rect(x, y, 15, 5);
+        ctx.rect(x+18, y-5, 8, 30);
+        ctx.rect(x+29, y, 15, 5);
+        ctx.fillStyle = "rgb(100, 200, 2)";
+        ctx.fill();
+        ctx.moveTo(x+15,y+3);
+        ctx.lineTo(x+18,y+3);
+        ctx.moveTo(x+26,y+3);
+        ctx.lineTo(x+29,y+3);
+        ctx.moveTo(x+22,y-5);
+        ctx.lineTo(x+22,y-10);
+        ctx.stroke();
+    }
+
+    if (type == 6){ // planet
+        ctx.beginPath();
+        ctx.arc(x+20,y+20,15,0,2*Math.PI);
+        ctx.fillStyle = "rgb(30, 170, 233)";
+        ctx.fill();
+        ctx.moveTo(x, y+20);
+        ctx.arc(x+20,y+20,20,0,2*Math.PI);
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    if (type == 7) { // debris1
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x+23, y+5);
+        ctx.lineTo(x+28, y+27);
+        ctx.lineTo(x, y+42);
+        ctx.lineTo(x-10, y+29);
+        ctx.closePath();
+        ctx.fillStyle = "rgb(107, 107, 107)";
+        ctx.fill();
+    }
+
+    if (type == 8) { // star2
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x+7.5, y+30);
+        ctx.lineTo(x+25, y+45);
+        ctx.lineTo(x, y+37.5);
+        ctx.lineTo(x-25, y+45);
+        ctx.lineTo(x-7.5, y+30);
+        ctx.closePath();
+        ctx.fillStyle = "rgb(60, 50, 200)";
+        ctx.fill();
+    }
+
+    if (type == 9) { //debris2
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x+19, y+2);
+        ctx.lineTo(x+7, y+21);
+        ctx.lineTo(x+28, y+25);
+        ctx.lineTo(x, y+49);
+        ctx.lineTo(x-15, y+31);
+        ctx.lineTo(x-8, y+22);
+        ctx.closePath();
+        ctx.fillStyle = "rgb(183, 183, 183)";
+        ctx.fill();
+    }
 }
 
 function drawRandomBlackhole() {
