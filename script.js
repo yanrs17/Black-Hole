@@ -1,12 +1,18 @@
-var INIT_TIME = 2;
-var SCORE = 0;
+var INIT_TIME = 60;
 var GAME_SPEED = 30;
-var NUM_INIT_BLACKHOLE = 1;
-var NUM_OBJECT = 2;
+var NUM_INIT_BLACKHOLE = 0;
+var NUM_OBJECT = 10;
 var BLUE_ABSORB_SPEED = 1;
 var PURPLE_ABSORB_SPEED = 4;
-var BLACK_ABSORB_SPEED = 6;
+var BLACK_ABSORB_SPEED = 7;
 var BLACKHOLE_APPEAR_FREQ = 2;
+
+if (typeof(Storage) === "undefined") {
+    alert("Web Storage is not supported.");
+}
+
+if (localStorage.highScore == null) localStorage.highScore = 0;
+
 
 var shapes = new Array();
 var Shape = function (x, y, xChange, yChange, type) {
@@ -17,7 +23,6 @@ var Shape = function (x, y, xChange, yChange, type) {
     this.trappedBy = null;
     this.obj = type;
 }
-
 var blackholes = new Array();
 var Blackhole = function (x, y, type) {
     this.x = x;
@@ -26,7 +31,7 @@ var Blackhole = function (x, y, type) {
     this.type = type;
     this.eaten = 0;
 }
-
+var keepOnlyOneCountDown = 0;
 window.onload = function () {
 
 	// Init canvas
@@ -35,12 +40,12 @@ window.onload = function () {
     window.paused = false;
     window.status = 0;
     window.time;
+    window.score = 0;
     c.setAttribute("onmousedown", "mouseDown(event)");
 
     // ctx.lineWidth = "6";
     drawTransitionalScreen('BLACKHOLE', 'START');
 }
-var keepOnlyOneCountDown = 0;
 
 function drawTransitionalScreen(title, button) {
 
@@ -57,7 +62,7 @@ function drawTransitionalScreen(title, button) {
     ctx.stroke();
     ctx.font = "20px Arial";
     ctx.fillText("HIGH SCORE", 440, 327);
-    ctx.fillText("0" + " POINTS", 455, 350);
+    ctx.fillText(localStorage.highScore + " POINTS", 455, 350);
 
     ctx.rect(425, 400, 150, 60); // Start Button
     ctx.stroke();
@@ -136,11 +141,11 @@ function start() {
 
     // Add Score
     if (status == 1) {
-        SCORE = 0;
+        score = 0;
         addScore(200);
     }
     else addScore(0);
-    // else if (status == 2) SCORE = 0;
+    // else if (status == 2) score = 0;
 
 
     // Add Pause
@@ -186,11 +191,11 @@ function start() {
 
 function addScore(s) {
 
-    SCORE += s;
+    score += s;
     ctx.fillStyle = "black";
     ctx.clearRect(500, 5, 150, 30);
     ctx.font = "20px Arial";
-    ctx.fillText("Score: " + SCORE, 500, 25);
+    ctx.fillText("Score: " + score, 500, 25);
 
 }
 
@@ -208,6 +213,7 @@ function countDown() {
             ctx.fillText(time + " second", 900, 25);
         }
         else {
+            if (score > localStorage.highScore) localStorage.highScore = score;
             checkStatus('win');
         }
 
