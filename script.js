@@ -1,4 +1,4 @@
-var INIT_TIME = 15;
+var INIT_TIME = 5;
 var GAME_SPEED = 30;
 var NUM_INIT_BLACKHOLE = 22;
 var NUM_OBJECT = 3;
@@ -236,6 +236,21 @@ function moveObjects() {
         moveObject();
         if (shapes.length <= 0) {
             console.log("You lose!");
+            if (score > localStorage.highScore1){
+            				console.log("count lose score");
+                    localStorage.highScore3 = localStorage.highScore2;
+                    localStorage.highScore2 = localStorage.highScore1;
+                    localStorage.highScore1 = score;
+                }
+                else if (score > localStorage.highScore2){
+                		console.log("count lose score");
+                    localStorage.highScore3 = localStorage.highScore2;
+                    localStorage.highScore2 = score;
+                }
+                else if (score > localStorage.highScore3){
+                		console.log("count lose score");
+                    localStorage.highScore3 = score;
+                }
             checkStatus('lose');
         }
         if (paused) clearTimeout(moveObjects);
@@ -277,7 +292,10 @@ function goToStatus() {
     else if (status == 1) start();
     else if (status == 2) start();
     else if (status == 3) drawTransitionalScreen('LEVEL 1', 'NEXT');
-    else if (status == 4) drawTransitionalScreen('YOU LOSE!', 'FINISH');
+    else if (status == 4) {
+    
+			drawTransitionalScreen('YOU LOSE!', 'FINISH');
+    }
     else if (status == 5) drawTransitionalScreen('YOU WIN!', 'FINISH');
 }
 
