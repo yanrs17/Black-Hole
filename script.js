@@ -45,10 +45,6 @@ window.onload = function () {
     window.status = 0;
     window.time;
     window.score = 0;
-<<<<<<< HEAD
-=======
-
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
     c.setAttribute("onmousedown", "mouseDown(event)");
     clearScreen();
     drawTransitionalScreen('BLACKHOLE', 'START');
@@ -68,11 +64,7 @@ function drawTransitionalScreen(title, button) {
     ctx.rect(425, 430, 150, 60); // Start Button
     ctx.stroke();
     ctx.closePath();
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
     ctx.font = "20px Arial";
     ctx.fillText(title, 440, 237);
     ctx.font = "20px Arial";
@@ -169,7 +161,6 @@ function start() {
 
     // Blackholes TODO: SVG
     ctx.imgBlackHole1 = new Image();
-<<<<<<< HEAD
     ctx.imgBlackHole1.src = 'img/blackhole1.svg';
     //ctx.imgBlackHole1.crossOrigin = 'anonymous';
     ctx.imgBlackHole2 = new Image();
@@ -178,13 +169,6 @@ function start() {
     ctx.imgBlackHole3 = new Image();
     ctx.imgBlackHole3.src = 'img/blackhole3.svg';
     //ctx.imgBlackHole3.crossOrigin = 'anonymous';
-=======
-    ctx.imgBlackHole1.src = 'img/blackhole1.png';
-    ctx.imgBlackHole2 = new Image();
-    ctx.imgBlackHole2.src = 'img/blackhole2.png';
-    ctx.imgBlackHole3 = new Image();
-    ctx.imgBlackHole3.src = 'img/blackhole3.png';
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
 
     ctx.imgBlackHole1.onload = function(){
       for (i = 0; i < NUM_INIT_BLACKHOLE; i++) {
@@ -221,10 +205,6 @@ function countDown() {
             ctx.fillText(time + " second", 900, 25);
         else {
             if (status == 2) {
-<<<<<<< HEAD
-=======
-            	// high score system, need to count high score when finish level 2
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
                 if (score > localStorage.highScore1){
                     localStorage.highScore3 = localStorage.highScore2;
                     localStorage.highScore2 = localStorage.highScore1;
@@ -237,28 +217,16 @@ function countDown() {
                 else if (score > localStorage.highScore3){
                     localStorage.highScore3 = score;
                 }
-<<<<<<< HEAD
 
             }
             checkStatus('win');
         }
 				// set the frequency of the new genrated black holes
-=======
-                   
-            }
-            checkStatus('win');
-        }
-	// set the frequency of the new genrated black holes
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
         if (time % Math.floor(BLACKHOLE_APPEAR_FREQ / (2*status)) == 0) {
             drawRandomBlackhole();
 }
     }
-<<<<<<< HEAD
 
-=======
-		
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
 		// pause function
     if (paused) clearTimeout(countDown);
     else setTimeout(countDown, 1000);
@@ -273,11 +241,7 @@ function moveObjects() {
         moveObject();
         if (shapes.length <= 0) {
             console.log("You lose!");
-<<<<<<< HEAD
             // high score system
-=======
-            // high score system, need when lose the game
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
             if (score > localStorage.highScore1){
             				console.log("count lose score");
                     localStorage.highScore3 = localStorage.highScore2;
@@ -530,7 +494,6 @@ function drawEachObject(x, y, type) {
         ctx.fill();
     }
 
-<<<<<<< HEAD
     if (type == 1) { // debris 3
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -545,43 +508,13 @@ function drawEachObject(x, y, type) {
       ctx.stroke();
       ctx.fillStyle = "rgb(193, 173, 163)";
       ctx.fill();
-=======
-    if (type == 1) { // spaceship
-        // Draw bottom
-        ctx.beginPath();
-        ctx.moveTo(x, y); 
-        ctx.bezierCurveTo(x, y+5.6, x-11, y+10.2, x-24.8, y+10.2);
-        ctx.bezierCurveTo(x-38.6, y+10.2, x-49.6, y+5.6, x-49.6, y); 
-        ctx.bezierCurveTo(x-49.6, y-5.6, x-38.6, y-10.2, x-24.8, y-10.2);
-        ctx.bezierCurveTo(x-11, y-10.2, x, y-5.6, x, y); 
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fillStyle = "rgb(111, 111, 100)";
-        ctx.fill();
-
-        //	Draw saucer top
-        ctx.beginPath();
-        ctx.moveTo(x-12.2, y-9.8);
-        ctx.bezierCurveTo(x-12.2, y-7.2, x-18, y-5.2, x-25, y-5.2);
-        ctx.bezierCurveTo(x-32, y-5.2,x-37.6, y-7.2, x-37.6, y-9.8);
-        ctx.bezierCurveTo(x-37.6, y-12.2, x-32, y-14.4, x-25, y-14.4);
-        ctx.bezierCurveTo(x-18, y-14.4, x-12.2, y-12.2, x-12.2, y-13.8); 
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fillStyle = "rgb(15, 233, 77)";
-        ctx.fill();
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
     }
 
     if(type == 2){ //rocket
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.bezierCurveTo(x-2, y-18, x-5, y-27, x+10, y-35);
-<<<<<<< HEAD
         ctx.bezierCurveTo(x+25, y-27, x+22, y-18, x+20, y);
-=======
-        ctx.bezierCurveTo(x+25, y-27, x+22, y-18, x+20, y); 
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
         ctx.lineTo(x+25,y+15);
         ctx.lineTo(x+18,y+05);
         ctx.lineTo(x+20,y+15);
@@ -601,11 +534,7 @@ function drawEachObject(x, y, type) {
         ctx.stroke();
         ctx.fillStyle = "rgb(15, 255, 255)";
         ctx.fill();
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
     }
 
     if (type == 3){ // star
@@ -639,11 +568,7 @@ function drawEachObject(x, y, type) {
         ctx.stroke();
         ctx.fillStyle = "rgb(10, 50, 2)";
         ctx.fill();
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
     }
 
     if (type == 5){ // Satellite2
@@ -661,11 +586,7 @@ function drawEachObject(x, y, type) {
         ctx.stroke();
         ctx.fillStyle = "rgb(100, 200, 2)";
         ctx.fill();
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
     }
 
     if (type == 6){ // planet
@@ -678,11 +599,7 @@ function drawEachObject(x, y, type) {
         ctx.arc(x+20,y+20,20,0,2*Math.PI);
         ctx.closePath();
         ctx.stroke();
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
     }
 
     if (type == 7) { // debris1
@@ -735,26 +652,16 @@ function drawRandomBlackhole() {
     do {
         isOverlapped = false;
         /* Generate rand # btw 0-950 */
-<<<<<<< HEAD
         x = Math.floor(Math.random() * 901) + 30;
         /* Generate rand # btw 40-590 */
         y = Math.floor(80 + Math.random() * 531);
-=======
-        x = Math.floor(Math.random() * 951);
-        /* Generate rand # btw 40-590 */
-        y = Math.floor(40 + Math.random() * 551);
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
 
         /* Generate rand # btw 1-14 */
         type = Math.floor(Math.random() * 14 + 1);
         /* 1-9      for blue    blackhole */
         /* 10-13    for purple  blackhole */
         /* 14       for black   blackhole */
-<<<<<<< HEAD
         
-=======
-
->>>>>>> 29ccf5cee722824f119e8fd1b95f7fe6dc51ecc1
         /* Dealing with overlapping */
         for (i = 0; i < blackholes.length; i ++) {
 
