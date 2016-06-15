@@ -1,11 +1,13 @@
-var INIT_TIME = 5;
+// define some macro at beginning, easier for differet tests
+
+var INIT_TIME = 60;
 var GAME_SPEED = 30;
-var NUM_INIT_BLACKHOLE = 22;
-var NUM_OBJECT = 3;
+var NUM_INIT_BLACKHOLE = 5;
+var NUM_OBJECT = 10;
 var BLUE_ABSORB_SPEED = 1;
 var PURPLE_ABSORB_SPEED = 4;
 var BLACK_ABSORB_SPEED = 7;
-var BLACKHOLE_APPEAR_FREQ = 2;
+var BLACKHOLE_APPEAR_FREQ = 5;
 
 if (typeof(Storage) === "undefined")
     alert("Web Storage is not supported.");
@@ -38,48 +40,50 @@ window.onload = function () {
 
 	/* Initialize canvas */
     window.c = document.getElementById("canvas");
-	window.ctx = c.getContext("2d");
+		window.ctx = c.getContext("2d");
     window.paused = false;
     window.status = 0;
     window.time;
     window.score = 0;
-
     c.setAttribute("onmousedown", "mouseDown(event)");
+    clearScreen();
     drawTransitionalScreen('BLACKHOLE', 'START');
 }
 
-function drawTransitionalScreen(title, button) {
-    
-    ctx.clearRect(0, 0, 1000, 640);
-    ctx.rect(300, 150, 400, 360); // Start frame
-    ctx.stroke();
+function clearScreen() {
+	ctx.clearRect(0,0,1000,640);
+}
 
+function drawTransitionalScreen(title, button) {
+
+    ctx.clearRect(0, 0, 1000, 640);
+    ctx.beginPath();
+    ctx.rect(300, 150, 400, 360); // Start frame
     ctx.rect(400, 200, 200, 60); // Title
+    ctx.rect(400, 300, 200, 100); // High Score
+    ctx.rect(425, 430, 150, 60); // Start Button
     ctx.stroke();
+    ctx.closePath();
+    
     ctx.font = "20px Arial";
     ctx.fillText(title, 440, 237);
-
-    ctx.rect(400, 300, 200, 100); // High Score
-    ctx.stroke();
     ctx.font = "20px Arial";
     if (status == 3) {
         ctx.fillText("SCORE", 460, 327);
         localStorage.tranScore = score;
-        ctx.fillText(localStorage.tranScore + " POINTS", 455, 350);
+        ctx.fillText(localStorage.tranScore + " POINTS", 445, 350);
     } else {
         ctx.fillText("HIGH SCORE", 440, 327);
-        ctx.fillText(localStorage.highScore1 + " POINTS", 455, 350);
-        ctx.fillText(localStorage.highScore2 + " POINTS", 455, 370);
-        ctx.fillText(localStorage.highScore3 + " POINTS", 455, 390);
+        ctx.fillText(localStorage.highScore1 + " POINTS", 445, 350);
+        ctx.fillText(localStorage.highScore2 + " POINTS", 445, 370);
+        ctx.fillText(localStorage.highScore3 + " POINTS", 445, 390);
     }
-    ctx.rect(425, 430, 150, 60); // Start Button
-    ctx.stroke();
     ctx.font = "20px Arial";
     ctx.fillText(button, 470, 465);
 }
 
 function isOnButton(x, y) {
-    return x > 425 && x < 425 + 150 && y > 400 && y < 400 + 60;
+    return x > 425 && x < 425 + 150 && y > 430 && y < 430 + 60;
 }
 
 function isOnPause(x, y){
@@ -133,7 +137,7 @@ function start() {
     // Add Level
     ctx.font = "20px Arial";
     ctx.fillText("Level " + status, 10, 25);
-
+		//ctx.stroke();
     // Add Score
     if (status == 1) {
         score = 0;
@@ -150,21 +154,21 @@ function start() {
     // Add time left
     ctx.font = "15px Arial";
     ctx.fillText(time + " seconds", 900, 25);
-
+		//ctx.stroke();
     for (i = 0; i < NUM_OBJECT; i++) {
         drawRandomObject(i % 10);
     }
 
-    // Blackholes
+    // Blackholes TODO: SVG 
     ctx.imgBlackHole1 = new Image();
-    ctx.imgBlackHole1.src = 'img/blackhole1.png';
-    // ctx.imgBlackHole1.crossOrigin = 'anonymous';
+    ctx.imgBlackHole1.src = 'img/blackhole1.svg';
+    //ctx.imgBlackHole1.crossOrigin = 'anonymous';
     ctx.imgBlackHole2 = new Image();
-    ctx.imgBlackHole2.src = 'img/blackhole2.png';
-    // ctx.imgBlackHole2.crossOrigin = 'anonymous';
+    ctx.imgBlackHole2.src = 'img/blackhole2.svg';
+    //ctx.imgBlackHole2.crossOrigin = 'anonymous';
     ctx.imgBlackHole3 = new Image();
-    ctx.imgBlackHole3.src = 'img/blackhole3.png';
-    // ctx.imgBlackHole3.crossOrigin = 'anonymous';
+    //ctx.imgBlackHole3.src = 'img/blackhole3.svg';
+    ctx.imgBlackHole3.crossOrigin = 'anonymous';
 
     ctx.imgBlackHole1.onload = function(){
       for (i = 0; i < NUM_INIT_BLACKHOLE; i++) {
@@ -201,7 +205,6 @@ function countDown() {
             ctx.fillText(time + " second", 900, 25);
         else {
             if (status == 2) {
-                alert(score);
                 if (score > localStorage.highScore1){
                     localStorage.highScore3 = localStorage.highScore2;
                     localStorage.highScore2 = localStorage.highScore1;
@@ -218,11 +221,13 @@ function countDown() {
             }
             checkStatus('win');
         }
-
-        if (time % Math.floor(BLACKHOLE_APPEAR_FREQ / status) == 0)
+				// set the frequency of the new genrated black holes
+        if (time % Math.floor(BLACKHOLE_APPEAR_FREQ / (2*status)) == 0) {
             drawRandomBlackhole();
+}
     }
-
+		
+		// pause function
     if (paused) clearTimeout(countDown);
     else setTimeout(countDown, 1000);
 
@@ -236,6 +241,7 @@ function moveObjects() {
         moveObject();
         if (shapes.length <= 0) {
             console.log("You lose!");
+            // high score system
             if (score > localStorage.highScore1){
             				console.log("count lose score");
                     localStorage.highScore3 = localStorage.highScore2;
@@ -259,47 +265,30 @@ function moveObjects() {
     else clearTimeout(moveObjects);
 }
 
+// FSM, 1 = level 1; 2 = level 2; 0 = start screen; 3 = transitional screen;
+// 4 = lose screen; 5 = win screen;
 function checkStatus(code) {
-
-    // console.log('before: ' + status);
-
-
-
-    // if (status == 3 || status == 4 || status == 5) {
-    //     console.log("haha");
-    //     clearTimeout(countDown);
-    //     // clearTimeout(moveObjects);
-    // }
 
     if (status == 0) status = 1;
     else if (status == 1 && code == 'win') status = 3;
     else if (status == 1 && code == 'lose') status = 4;
-    else if (status == 1) console.log("Something is wrong"); // Debugging
     else if (status == 2 && code == 'win') status = 5;
     else if (status == 2 && code == 'lose') status = 4;
-    else if (status == 2) console.log("Something is wrong"); // Debugging
     else if (status == 3) status = 2;
     else if (status == 4) status = 0;
     else if (status == 5) status = 0;
-    // console.log('after: ' + status);
     goToStatus();
 }
 
 function goToStatus() {
-    // console.log(status + " goToStatus");
-    ctx.clearRect(0, 0, 1000, 640);
+    clearScreen();
     if (status == 0) drawTransitionalScreen('BLACKHOLE', 'START');
     else if (status == 1) start();
     else if (status == 2) start();
     else if (status == 3) drawTransitionalScreen('LEVEL 1', 'NEXT');
-    else if (status == 4) {
-    
-			drawTransitionalScreen('YOU LOSE!', 'FINISH');
-    }
+    else if (status == 4) drawTransitionalScreen('YOU LOSE!', 'FINISH');
     else if (status == 5) drawTransitionalScreen('YOU WIN!', 'FINISH');
 }
-
-//window.addEventListener('mousedown', getMousePos, false);
 
 function getMousePos(event) {
     var rect = c.getBoundingClientRect();
@@ -354,6 +343,21 @@ function isInArea(xBlackhole, yBlackhole, xSelected, ySelected) {
         ySelected < bottomBoundary
 }
 
+// decide the status of moving which can be move as usual, trap when close
+// to black hole, absorb when being absorbed
+function moveObject() {
+
+    var i, j;
+    for (i = 0; i < shapes.length; i ++) {
+        /* If not trapped: Move as usual */
+        if (shapes[i].trappedBy == null) move(i);
+        /* Try to trap an object if in 100px of a blackhole */
+        trap(i);
+        /* If trapped: Absorb into the center */
+        if (shapes[i].trappedBy != null) absorb(i);
+    }
+}
+
 function trap(i) {
     for (j = 0; j < blackholes.length; j ++) {
         if (shapes[i] != null || shapes[i].trappedBy == null) {
@@ -382,19 +386,6 @@ function move(i) {
     drawEachObject(newX, newY, shapes[i].obj);
     shapes[i].x = newX;
     shapes[i].y = newY;
-}
-
-function moveObject() {
-
-    var i, j;
-    for (i = 0; i < shapes.length; i ++) {
-        /* If not trapped: Move as usual */
-        if (shapes[i].trappedBy == null) move(i);
-        /* Try to trap an object if in 100px of a blackhole */
-        trap(i);
-        /* If trapped: Absorb into the center */
-        if (shapes[i].trappedBy != null) absorb(i);
-    }
 }
 
 function absorb(i) {
@@ -430,11 +421,11 @@ function absorb(i) {
 function isFull(type, i) {
 
     if (shapes[i].trappedBy.type == "blue")
-        return shapes[i].trappedBy.eaten == 1;
+        return shapes[i].trappedBy.eaten == 3;
     if (shapes[i].trappedBy.type == "purple")
         return shapes[i].trappedBy.eaten == 2;
     if (shapes[i].trappedBy.type == "black")
-        return shapes[i].trappedBy.eaten == 3;
+        return shapes[i].trappedBy.eaten == 1;
 }
 
 function goAway(i) {
@@ -482,14 +473,11 @@ function drawRandomObject(object) {
     var x = Math.floor(Math.random() * 951);
     // Generate rand # btw 80-590
     var y = Math.floor(80 + Math.random() * 511);
-    //var angle = 0; // Need to be changed later
     // Generate rand # btw 1-10
     var xChange = Math.floor(Math.random() * 10 + 1);
     var yChange = Math.floor(Math.random() * 10 + 1);
 
     drawEachObject(x, y, object.obj);
-
-    //ctx.drawImage(object, x, y, 50, 50);
     shapes.push(new Shape(x, y, xChange, yChange, object));
 }
 
@@ -502,29 +490,32 @@ function drawEachObject(x, y, type) {
         ctx.bezierCurveTo(x+33.8, y-19.5, x+50.7, y+13, x+32.5, y+32.5);//
         ctx.bezierCurveTo(x+36.4, y+18.2, x+28.6, y-5.2, x, y);//
         ctx.closePath();
+        ctx.stroke();
         ctx.fill();
     }
 
     if (type == 1) { // spaceship
         // Draw bottom
         ctx.beginPath();
-        ctx.moveTo(x, y); //28.4, 16.9
-        ctx.bezierCurveTo(x, y+5.6, x-11, y+10.2, x-24.8, y+10.2); //28.4, 19.7, 22.9, 22.0, 16.0, 22.0
-        ctx.bezierCurveTo(x-38.6, y+10.2, x-49.6, y+5.6, x-49.6, y); //9.1, 22.0, 3.6, 19.7, 3.6, 16.9
-        ctx.bezierCurveTo(x-49.6, y-5.6, x-38.6, y-10.2, x-24.8, y-10.2); //3.6, 14.1, 9.1, 11.8, 16.0, 11.8
-        ctx.bezierCurveTo(x-11, y-10.2, x, y-5.6, x, y); //22.9, 11.8, 28.4, 14.1, 28.4, 16.9
+        ctx.moveTo(x, y); 
+        ctx.bezierCurveTo(x, y+5.6, x-11, y+10.2, x-24.8, y+10.2);
+        ctx.bezierCurveTo(x-38.6, y+10.2, x-49.6, y+5.6, x-49.6, y); 
+        ctx.bezierCurveTo(x-49.6, y-5.6, x-38.6, y-10.2, x-24.8, y-10.2);
+        ctx.bezierCurveTo(x-11, y-10.2, x, y-5.6, x, y); 
         ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "rgb(111, 111, 100)";
         ctx.fill();
 
         //	Draw saucer top
         ctx.beginPath();
-        ctx.moveTo(x-12.2, y-9.8); //22.3, 12.0
-        ctx.bezierCurveTo(x-12.2, y-7.2, x-18, y-5.2, x-25, y-5.2); //22.3, 13.3, 19.4, 14.3, 15.9, 14.3
-        ctx.bezierCurveTo(x-32, y-5.2,x-37.6, y-7.2, x-37.6, y-9.8); //12.4, 14.3, 9.6, 13.3, 9.6, 12.0
-        ctx.bezierCurveTo(x-37.6, y-12.2, x-32, y-14.4, x-25, y-14.4); //9.6, 10.8, 12.4, 9.7, 15.9, 9.7
-        ctx.bezierCurveTo(x-18, y-14.4, x-12.2, y-12.2, x-12.2, y-13.8); //19.4, 9.7, 22.3, 10.8, 22.3, 12.0
+        ctx.moveTo(x-12.2, y-9.8);
+        ctx.bezierCurveTo(x-12.2, y-7.2, x-18, y-5.2, x-25, y-5.2);
+        ctx.bezierCurveTo(x-32, y-5.2,x-37.6, y-7.2, x-37.6, y-9.8);
+        ctx.bezierCurveTo(x-37.6, y-12.2, x-32, y-14.4, x-25, y-14.4);
+        ctx.bezierCurveTo(x-18, y-14.4, x-12.2, y-12.2, x-12.2, y-13.8); 
         ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "rgb(15, 233, 77)";
         ctx.fill();
     }
@@ -533,7 +524,7 @@ function drawEachObject(x, y, type) {
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.bezierCurveTo(x-2, y-18, x-5, y-27, x+10, y-35);
-        ctx.bezierCurveTo(x+25, y-27, x+22, y-18, x+20, y); //9.1, 22.0, 3.6, 19.7, 3.6, 16.9
+        ctx.bezierCurveTo(x+25, y-27, x+22, y-18, x+20, y); 
         ctx.lineTo(x+25,y+15);
         ctx.lineTo(x+18,y+05);
         ctx.lineTo(x+20,y+15);
@@ -544,12 +535,16 @@ function drawEachObject(x, y, type) {
         ctx.lineTo(x+2,y+5);
         ctx.lineTo(x-5,y+15);
         ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "rgb(230, 50, 233)";
         ctx.fill();
         ctx.beginPath();
         ctx.arc(x+10,y-15,5,0,2*Math.PI);
+        ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "rgb(15, 255, 255)";
         ctx.fill();
+        
     }
 
     if (type == 3){ // star
@@ -563,6 +558,7 @@ function drawEachObject(x, y, type) {
         ctx.lineTo(x+0,y+10);
         ctx.lineTo(x-20,y+5);
         ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "rgb(60, 50, 200)";
         ctx.fill();
     }
@@ -572,15 +568,17 @@ function drawEachObject(x, y, type) {
         ctx.rect(x, y, 15, 5);
         ctx.rect(x+18, y-5, 8, 20);
         ctx.rect(x+29, y, 15, 5);
-        ctx.fillStyle = "rgb(10, 50, 2)";
-        ctx.fill();
         ctx.moveTo(x+15,y+3);
         ctx.lineTo(x+18,y+3);
         ctx.moveTo(x+26,y+3);
         ctx.lineTo(x+29,y+3);
         ctx.moveTo(x+22,y-5);
         ctx.lineTo(x+22,y-10);
+        ctx.closePath();
         ctx.stroke();
+        ctx.fillStyle = "rgb(10, 50, 2)";
+        ctx.fill();
+        
     }
 
     if (type == 5){ // Satellite2
@@ -588,15 +586,17 @@ function drawEachObject(x, y, type) {
         ctx.rect(x, y, 15, 5);
         ctx.rect(x+18, y-5, 8, 30);
         ctx.rect(x+29, y, 15, 5);
-        ctx.fillStyle = "rgb(100, 200, 2)";
-        ctx.fill();
         ctx.moveTo(x+15,y+3);
         ctx.lineTo(x+18,y+3);
         ctx.moveTo(x+26,y+3);
         ctx.lineTo(x+29,y+3);
         ctx.moveTo(x+22,y-5);
         ctx.lineTo(x+22,y-10);
+        ctx.closePath();
         ctx.stroke();
+        ctx.fillStyle = "rgb(100, 200, 2)";
+        ctx.fill();
+        
     }
 
     if (type == 6){ // planet
@@ -604,10 +604,12 @@ function drawEachObject(x, y, type) {
         ctx.arc(x+20,y+20,15,0,2*Math.PI);
         ctx.fillStyle = "rgb(30, 170, 233)";
         ctx.fill();
+        ctx.stroke();
         ctx.moveTo(x, y+20);
         ctx.arc(x+20,y+20,20,0,2*Math.PI);
-        ctx.stroke();
         ctx.closePath();
+        ctx.stroke();
+        
     }
 
     if (type == 7) { // debris1
@@ -618,6 +620,7 @@ function drawEachObject(x, y, type) {
         ctx.lineTo(x, y+42);
         ctx.lineTo(x-10, y+29);
         ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "rgb(107, 107, 107)";
         ctx.fill();
     }
@@ -631,6 +634,7 @@ function drawEachObject(x, y, type) {
         ctx.lineTo(x-25, y+45);
         ctx.lineTo(x-7.5, y+30);
         ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "rgb(60, 50, 200)";
         ctx.fill();
     }
@@ -645,6 +649,7 @@ function drawEachObject(x, y, type) {
         ctx.lineTo(x-15, y+31);
         ctx.lineTo(x-8, y+22);
         ctx.closePath();
+        ctx.stroke();
         ctx.fillStyle = "rgb(183, 183, 183)";
         ctx.fill();
     }
@@ -685,7 +690,7 @@ function drawRandomBlackhole() {
         /* If overlapped, find a new position until not overlapped */
     } while (isOverlapped);
 
-
+	//TODO:draw?
     if (type >= 1 && type <= 9) {
         ctx.drawImage(ctx.imgBlackHole1, x, y, 50, 50);
         blackholes.push(new Blackhole(x, y, 'blue'));
