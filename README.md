@@ -1,8 +1,8 @@
 # Black-Hole
 
 ## Authors
-- YAN RUOSHUI G5RYAN RYAN.YAN@MAIL.UTORONTO.CA
-- LI YUE C4LIYUF YUEEE.LI@MAIL.UTORONTO.CA
+- Ruoshui Yan g5ryan ryan.yan@mail.utoronto.ca
+- Yue Li c4liyuf yueee.li@mail.utoronto.ca
 
 ## Objective
 The object of the game is to stop black holes from eating the solar system – planets, nebulae, alien spacecraft, space junk – by quickly clicking on all of the black holes as they appear before the time is up.
