@@ -1,4 +1,4 @@
-# Black-Hole
+# Blackhole
 
 ## Authors
 - Ruoshui Yan g5ryan ryan.yan@mail.utoronto.ca
